@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aethel — building ideas into experiences</title>
+<meta name="description" content="Aethel — indie developer. Rust, Java, TypeScript, Dart. Minecraft launchers, anticheats, zero-knowledge tools, self-hosted everything.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  @font-face { font-family: "Space Grotesk"; src: url("fonts/SpaceGrotesk-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Space Grotesk"; src: url("fonts/SpaceGrotesk-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "Space Grotesk"; src: url("fonts/SpaceGrotesk-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+  @font-face { font-family: "JetBrains Mono"; src: url("fonts/JetBrainsMono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "JetBrains Mono"; src: url("fonts/JetBrainsMono-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+  @font-face { font-family: "MC"; src: url("assets/minecraft.woff2") format("woff2"); font-display: swap; }
+
+  :root {
+    --ground: #0b1013;
+    --ink: #eef3f0;
+    --muted: #93a69f;
+    --torch: #e8a44c;
+    --moss: #56b896;
+    --line: rgba(238, 243, 240, 0.14);
+    --scrim: rgba(11, 16, 19, 0.78);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--torch); color: var(--ground); }
+
+  /* ---- fixed 3D world ---- */
+  #world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+  .no3d #world { display: none; }
+  .no3d body { background: var(--ground) url("assets/avatar.png") right 8vh / min(38vw, 340px) no-repeat; }
+
+  #loader {
+    position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
+    background: var(--ground); transition: opacity 0.6s ease;
+    font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: 0.14em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  #loader.done { opacity: 0; pointer-events: none; }
+  #loader .bar { width: 128px; height: 8px; margin: 14px auto 0; border: 1px solid var(--line); }
+  #loader .bar i { display: block; height: 100%; background: var(--torch); animation: fill 1.4s steps(8) infinite; }
+  @keyframes fill { from { width: 0; } to { width: 100%; } }
+
+  /* ---- nav ---- */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px clamp(20px, 4vw, 48px);
+    background: linear-gradient(180deg, rgba(11, 16, 19, 0.85), transparent);
+  }
+  .nav .brand { font-weight: 700; font-size: 19px; letter-spacing: -0.02em; color: var(--ink); text-decoration: none; }
+  .nav .brand em { color: var(--torch); font-style: normal; }
+  .nav .links { display: flex; gap: 26px; align-items: center; font-family: "JetBrains Mono", monospace; font-size: 13px; }
+  .nav .links a { color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .nav .links a:hover { color: var(--ink); }
+  .nav .links a.enter { color: var(--ground); background: var(--torch); padding: 8px 14px; font-weight: 600; }
+  .nav .links a.enter:hover { background: #f2b866; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--torch); outline-offset: 3px; }
+
+  /* ---- content flow over the world ---- */
+  main { position: relative; z-index: 10; }
+  section { min-height: 132vh; display: flex; align-items: center; padding: 0 clamp(20px, 5vw, 64px); }
+  .panel { max-width: 540px; position: relative; padding: 34px 36px; }
+  .panel::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background: linear-gradient(100deg, var(--scrim), rgba(11, 16, 19, 0.45) 68%, transparent);
+    border-left: 2px solid var(--torch);
+  }
+  .panel.right { margin-left: auto; }
+  .panel.right::before {
+    background: linear-gradient(260deg, var(--scrim), rgba(11, 16, 19, 0.45) 68%, transparent);
+    border-left: none; border-right: 2px solid var(--torch);
+  }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--torch); margin-bottom: 14px;
+  }
+  h1 { font-size: clamp(56px, 9vw, 104px); font-weight: 700; letter-spacing: -0.04em; line-height: 0.96; }
+  h1 em { color: var(--torch); font-style: normal; }
+  h2 { font-size: clamp(28px, 3.6vw, 40px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .lede { color: var(--muted); font-size: 17px; max-width: 46ch; margin-top: 18px; }
+  .actions { display: flex; gap: 14px; margin-top: 28px; flex-wrap: wrap; }
+  .btn {
+    font-family: "JetBrains Mono", monospace; font-size: 14px; font-weight: 600;
+    padding: 13px 20px; text-decoration: none; transition: transform 0.12s, background 0.15s;
+    display: inline-block;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--torch); color: var(--ground); }
+  .btn.primary:hover { background: #f2b866; }
+  .btn.ghost { color: var(--ink); border: 1px solid var(--line); }
+  .btn.ghost:hover { border-color: var(--muted); }
+  .meta {
+    margin-top: 30px; font-family: "JetBrains Mono", monospace; font-size: 12px;
+    letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase;
+  }
+  .meta .mc { font-family: "MC", monospace; letter-spacing: 0.06em; color: var(--moss); }
+
+  /* ---- featured ---- */
+  .facts { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; margin-top: 20px; font-size: 14.5px; }
+  .facts dt { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; padding-top: 3px; }
+  .facts dd { color: var(--ink); }
+
+  /* ---- work rows ---- */
+  .worklist { list-style: none; margin-top: 10px; }
+  .workrow { border-top: 1px solid var(--line); }
+  .workrow:last-child { border-bottom: 1px solid var(--line); }
+  .workrow .row {
+    position: relative; display: grid; grid-template-columns: 46px 1fr auto; gap: 16px;
+    align-items: baseline; padding: 15px 10px 15px 0; transition: background 0.15s, padding-left 0.15s;
+  }
+  .workrow .num { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); }
+  .workrow h3 { font-size: 18px; font-weight: 500; }
+  .workrow h3 a { color: var(--ink); text-decoration: none; }
+  .workrow h3 a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+  .workrow .stack { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); text-align: right; }
+  .workrow .ext { position: relative; z-index: 2; color: var(--moss); text-decoration: none; font-family: "JetBrains Mono", monospace; font-size: 12px; margin-left: 10px; }
+  .workrow .ext:hover { text-decoration: underline; }
+  .workrow .row:hover { background: rgba(238, 243, 240, 0.05); padding-left: 8px; }
+  .workrow .row:hover h3 a { color: var(--torch); }
+  .workrow:has(h3 a:focus-visible) .row { background: rgba(238, 243, 240, 0.06); outline: 2px solid var(--torch); outline-offset: -2px; }
+  .blurb { grid-column: 2 / 4; font-size: 14px; color: var(--muted); margin-top: -4px; padding-bottom: 2px; }
+
+  /* ---- about ---- */
+  .stacktable { width: 100%; border-collapse: collapse; margin-top: 22px; font-size: 14.5px; }
+  .stacktable td { padding: 9px 0; border-top: 1px solid var(--line); }
+  .stacktable td:first-child { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; width: 38%; }
+  .stacktable tr:last-child td { border-bottom: 1px solid var(--line); }
+
+  /* ---- footer ---- */
+  footer {
+    position: relative; z-index: 10; background: var(--ground);
+    border-top: 1px solid var(--line); padding: 64px clamp(20px, 5vw, 64px) 40px;
+  }
+  footer .quote { font-size: clamp(20px, 3vw, 28px); max-width: 30ch; letter-spacing: -0.01em; }
+  footer .frow { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-top: 40px; align-items: center; }
+  footer .flinks { display: flex; gap: 24px; font-family: "JetBrains Mono", monospace; font-size: 13px; }
+  footer .flinks a { color: var(--muted); text-decoration: none; }
+  footer .flinks a:hover { color: var(--torch); }
+  footer .colophon { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); letter-spacing: 0.08em; }
+  footer .colophon .mc { font-family: "MC", monospace; color: var(--moss); }
+
+  /* ---- scroll hint ---- */
+  .scrollhint {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 15;
+    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.18em;
+    color: var(--muted); text-transform: uppercase; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .scrollhint.hide { opacity: 0; }
+
+  @media (max-width: 720px) {
+    section { min-height: 118vh; align-items: flex-end; padding-bottom: 12vh; }
+    .panel { max-width: none; width: 100%; padding: 24px 20px; }
+    .panel::before { background: linear-gradient(0deg, var(--scrim) 55%, transparent); border-left: none; border-top: 2px solid var(--torch); }
+    .panel.right::before { background: linear-gradient(0deg, var(--scrim) 55%, transparent); border-right: none; border-top: 2px solid var(--torch); }
+    .panel.right { margin-left: 0; }
+    .nav .links a:not(.enter) { display: none; }
+    h1 { font-size: clamp(48px, 15vw, 72px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scrollhint { display: none; }
+    #loader .bar i { animation: none; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="world" aria-hidden="true"></canvas>
+
+<div id="loader" role="status">
+  <div>
+    Building world
+    <div class="bar"><i></i></div>
+  </div>
+</div>
+
+<header class="nav">
+  <a class="brand" href="#">Aethel<em>.</em></a>
+  <nav class="links" aria-label="Primary">
+    <a href="#featured">Featured</a>
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a class="enter" href="aethel/">Enter&nbsp;Aethel&nbsp;↗</a>
+  </nav>
+</header>
+
+<main id="journey">
+
+  <section id="hero" aria-label="Introduction">
+    <div class="panel">
+      <p class="eyebrow">Indie developer &amp; builder</p>
+      <h1>Aethel<em>.</em></h1>
+      <p class="lede">Building ideas into experiences, one project at a time — Minecraft clients and anticheats, zero-knowledge tools, self-hosted everything.</p>
+      <div class="actions">
+        <a class="btn primary" href="aethel/">Open Aethel</a>
+        <a class="btn ghost" href="#work">See the work</a>
+      </div>
+      <p class="meta">Rust · Java · TypeScript · Dart · Go&nbsp;&nbsp;<span class="mc">player: darki_krish</span></p>
+    </div>
+  </section>
+
+  <section id="featured" aria-label="Featured project">
+    <div class="panel right">
+      <p class="eyebrow">Featured — the monolith</p>
+      <h2>Aethel</h2>
+      <p class="lede">A zero-knowledge vault for passwords, bills, and focus. The master password never leaves your device — the server only ever sees ciphertext, and rejects anything else.</p>
+      <dl class="facts">
+        <dt>App</dt><dd>Flutter · Riverpod · SQLCipher</dd>
+        <dt>Crypto</dt><dd>HKDF-SHA256 + AES-256-GCM</dd>
+        <dt>Server</dt><dd>Node · TypeScript · Postgres</dd>
+        <dt>Open</dt><dd><a class="btn ghost" style="padding:8px 14px;font-size:13px" href="aethel/">Aethel landing ↗</a></dd>
+      </dl>
+    </div>
+  </section>
+
+  <section id="work" aria-label="Selected work">
+    <div class="panel">
+      <p class="eyebrow">The ridge — selected work</p>
+      <h2>Seven builds, one path</h2>
+      <ol class="worklist">
+        <li class="workrow"><div class="row">
+          <span class="num">01</span>
+          <h3><a href="https://github.com/aethelreborn/AethelONE" target="_blank" rel="noopener">AethelONE</a></h3>
+          <span class="stack">Rust</span>
+          <p class="blurb">OneClient fork — offline accounts, self-hosted auto-update, minisign-signed releases.</p>
+        </div></li>
+        <li class="workrow"><div class="row">
+          <span class="num">02</span>
+          <h3><a href="https://github.com/aethelreborn/AethelLauncher" target="_blank" rel="noopener">AethelLauncher</a></h3>
+          <span class="stack">Rust · egui · Axum</span>
+          <p class="blurb">A Minecraft launcher built to run well on a laggy laptop.</p>
+        </div></li>
+        <li class="workrow"><div class="row">
+          <span class="num">03</span>
+          <h3><a href="https://github.com/aethelreborn/AethelAC" target="_blank" rel="noopener">AethelAC</a></h3>
+          <span class="stack">Java</span>
+          <p class="blurb">Anticheat that re-simulates vanilla physics and compares — math, not guesses.</p>
+        </div></li>
+        <li class="workrow"><div class="row">
+          <span class="num">04</span>
+          <h3><a href="https://github.com/aethelreborn/AethelOnePLUS" target="_blank" rel="noopener">AethelOnePLUS</a></h3>
+          <span class="stack">Kotlin</span>
+          <p class="blurb">PolyPlus — world hosting, friends, cosmetics. On Modrinth &amp; CurseForge.</p>
+        </div></li>
+        <li class="workrow"><div class="row">
+          <span class="num">05</span>
+          <h3><a href="https://github.com/aethelreborn/anyupload" target="_blank" rel="noopener">anyupload</a></h3>
+          <span class="stack">TypeScript<a class="ext" href="https://anyupload.vercel.app" target="_blank" rel="noopener">Live&nbsp;↗</a></span>
+          <p class="blurb">Cross-device file handoff, straight to Vercel Blob — no serverless size limit.</p>
+        </div></li>
+        <li class="workrow"><div class="row">
+          <span class="num">06</span>
+          <h3><a href="https://github.com/aethelreborn/firstboot" target="_blank" rel="noopener">firstboot</a></h3>
+          <span class="stack">Go</span>
+          <p class="blurb">TUI that turns a fresh OS into a dev machine, one checkbox at a time.</p>
+        </div></li>
+        <li class="workrow"><div class="row">
+          <span class="num">07</span>
+          <h3><a href="https://github.com/aethelreborn/AethelPanel" target="_blank" rel="noopener">AethelPanel</a></h3>
+          <span class="stack">TypeScript</span>
+          <p class="blurb">Self-hosted game-server panel with a daemon per machine and HMAC auth.</p>
+        </div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="about" aria-label="About">
+    <div class="panel right">
+      <p class="eyebrow">The campfire</p>
+      <h2>Hey — I'm Aethel.</h2>
+      <p class="lede">I build complete products end to end: crypto layer, GUI, and the pipeline that ships them. Privacy and self-hosting run through everything — my own update channels, my own panels, my own storage.</p>
+      <table class="stacktable">
+        <tr><td>Systems &amp; infra</td><td>Rust — egui, Axum, native Minecraft servers</td></tr>
+        <tr><td>Minecraft craft</td><td>Java &amp; Kotlin — plugins, mods, anticheats</td></tr>
+        <tr><td>Web &amp; backend</td><td>TypeScript, Node, Go</td></tr>
+        <tr><td>Apps</td><td>Dart — Flutter, Riverpod</td></tr>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer id="end">
+  <p class="quote">“Building ideas into experiences, one project at a time.”</p>
+  <div class="frow">
+    <div class="flinks">
+      <a href="https://github.com/aethelreborn" target="_blank" rel="noopener">GitHub ↗</a>
+      <a href="aethel/">Aethel ↗</a>
+      <a href="#hero">Back to camp ↑</a>
+    </div>
+    <p class="colophon">Built by Aethel · world rendered live · <span class="mc">skin: darki_krish</span></p>
+  </div>
+</footer>
+
+<p class="scrollhint" id="scrollhint">Scroll to walk ↓</p>
+
+<script type="module" src="assets/scene.js"></script>
+<script>
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const h = document.getElementById("scrollhint");
+    if (h) h.remove();
+  } else {
+    addEventListener("scroll", () => {
+      document.getElementById("scrollhint")?.classList.toggle("hide", scrollY > 60);
+    }, { passive: true });
+  }
+  // if the scene fails to start within4s, show the fallback avatar state
+  setTimeout(() => {
+    if (!document.getElementById("loader")?.classList.contains("done")) {
+      document.documentElement.classList.add("no3d");
+      document.getElementById("loader")?.remove();
+    }
+  }, 4000);
+</script>
+</body>
+</html>
