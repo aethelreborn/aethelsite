@@ -57,12 +57,18 @@
     position: fixed; top: 0; left: 0; right: 0; z-index: 20;
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px clamp(20px, 4vw, 48px);
-    background: linear-gradient(180deg, rgba(11, 16, 19, 0.85), transparent);
+    background: linear-gradient(180deg, rgba(11, 16, 19, 0.94) 0%, rgba(11, 16, 19, 0.9) 82%, rgba(11, 16, 19, 0) 100%);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+    backdrop-filter: blur(12px) saturate(1.1);
+    -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 82%, transparent 100%);
   }
+  .nav .brand, .nav .links a { display: inline-flex; align-items: center; min-height: 44px; }
+  .nav .links a.enter { padding: 10px 16px; }
   .nav .brand { font-weight: 700; font-size: 19px; letter-spacing: -0.02em; color: var(--ink); text-decoration: none; }
   .nav .brand em { color: var(--torch); font-style: normal; }
   .nav .links { display: flex; gap: 26px; align-items: center; font-family: "JetBrains Mono", monospace; font-size: 13px; }
-  .nav .links a { color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .nav .links a { color: var(--muted); text-decoration: none; transition: color 0.15s; padding: 8px 4px; }
   .nav .links a:hover { color: var(--ink); }
   .nav .links a.enter { color: var(--ground); background: var(--torch); padding: 8px 14px; font-weight: 600; }
   .nav .links a.enter:hover { background: #f2b866; }
@@ -125,7 +131,7 @@
   .workrow h3 a { color: var(--ink); text-decoration: none; }
   .workrow h3 a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
   .workrow .stack { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); text-align: right; }
-  .workrow .ext { position: relative; z-index: 2; color: var(--moss); text-decoration: none; font-family: "JetBrains Mono", monospace; font-size: 12px; margin-left: 10px; }
+  .workrow .ext { position: relative; z-index: 2; color: var(--moss); text-decoration: none; font-family: "JetBrains Mono", monospace; font-size: 12px; margin-left: 10px; padding: 6px 10px; min-height: 44px; display: inline-flex; align-items: center; }
   .workrow .ext:hover { text-decoration: underline; }
   .workrow .row:hover { background: rgba(238, 243, 240, 0.05); padding-left: 8px; }
   .workrow .row:hover h3 a { color: var(--torch); }
@@ -146,7 +152,7 @@
   footer .quote { font-size: clamp(20px, 3vw, 28px); max-width: 30ch; letter-spacing: -0.01em; }
   footer .frow { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-top: 40px; align-items: center; }
   footer .flinks { display: flex; gap: 24px; font-family: "JetBrains Mono", monospace; font-size: 13px; }
-  footer .flinks a { color: var(--muted); text-decoration: none; }
+  footer .flinks a { color: var(--muted); text-decoration: none; padding: 10px 4px; min-height: 44px; display: inline-flex; align-items: center; }
   footer .flinks a:hover { color: var(--torch); }
   footer .colophon { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); letter-spacing: 0.08em; }
   footer .colophon .mc { font-family: "MC", monospace; color: var(--moss); }
@@ -220,7 +226,7 @@
         <dt>App</dt><dd>Flutter · Riverpod · SQLCipher</dd>
         <dt>Crypto</dt><dd>HKDF-SHA256 + AES-256-GCM</dd>
         <dt>Server</dt><dd>Node · TypeScript · Postgres</dd>
-        <dt>Open</dt><dd><a class="btn ghost" style="padding:8px 14px;font-size:13px" href="aethel/">Aethel landing ↗</a></dd>
+        <dt>Open</dt><dd><a class="btn ghost" style="padding:10px 14px;font-size:13px;min-height:44px;display:inline-flex;align-items:center" href="aethel/">Aethel landing ↗</a></dd>
       </dl>
     </div>
   </section>
@@ -316,13 +322,13 @@
       document.getElementById("scrollhint")?.classList.toggle("hide", scrollY > 60);
     }, { passive: true });
   }
-  // if the scene fails to start within4s, show the fallback avatar state
+  // if the scene fails to start within 8s, show the fallback avatar state
   setTimeout(() => {
-    if (!document.getElementById("loader")?.classList.contains("done")) {
+    if (!window.__worldReady) {
       document.documentElement.classList.add("no3d");
       document.getElementById("loader")?.remove();
     }
-  }, 4000);
+  }, 8000);
 </script>
 </body>
 </html>

@@ -195,6 +195,7 @@ scene.add(moonSprite);
 const player = new PlayerObject();
 const skinTex = new THREE.TextureLoader().load("assets/skin.png", () => {
   if (loader) { loader.classList.add("done"); setTimeout(() => loader.remove(), 650); }
+  document.documentElement.classList.remove("no3d");
 });
 skinTex.magFilter = THREE.NearestFilter;
 skinTex.minFilter = THREE.NearestFilter;
@@ -255,8 +256,8 @@ const camKeys = [
   { p: 0.38, pos: [-150, 62, 55], look: [30, 46, -20] },
   { p: 0.58, pos: [-145, 56, -115], look: [0, 22, -168] },
   { p: 0.70, pos: [-95, 46, -155], look: [0, 18, -200] },
-  { p: 0.80, pos: [75, 42, -135], look: [0, 18, -232] },
-  { p: 0.90, pos: [85, 38, -148], look: [0, 16, -234] },
+  { p: 0.80, pos: [128, 78, -52], look: [0, 16, -232] },
+  { p: 0.90, pos: [120, 70, -96], look: [0, 14, -238] },
   { p: 1.00, pos: [210, 250, -20], look: [0, 8, -220] },
 ];
 const smooth = (t) => t * t * (3 - 2 * t);
@@ -299,9 +300,17 @@ resize();
 const tmpPos = [0, 0, 0], tmpLook = [0, 0, 0], prevPos = new THREE.Vector3(0, 0, 96);
 let yaw = Math.PI, lastT = performance.now();
 
+let firstFrame = true;
 function frame(now) {
   const dt = Math.min(0.05, (now - lastT) / 1000);
   lastT = now;
+
+  if (firstFrame) {
+    firstFrame = false;
+    window.__worldReady = true;
+    if (loader) { loader.classList.add("done"); setTimeout(() => loader.remove(), 650); }
+    document.documentElement.classList.remove("no3d");
+  }
 
   curP = reduceMotion ? 0 : curP + (targetP - curP) * (1 - Math.pow(0.001, dt));
 
@@ -359,4 +368,5 @@ window.__a = {
   camera, player, scene, renderer,
   get p() { return curP; },
   get anim() { return curAnim; },
+  setP(v) { curP = targetP = Math.min(1, Math.max(0, v)); },
 };

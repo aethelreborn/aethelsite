@@ -2,3 +2,7 @@
 .vercel
 .env*
 .design/
+
+# Agent session notes (local only, never commit)
+NOTES.md
+SESSION_LOG.md
