@@ -1,9 +1,9 @@
 # aethelsite
 
-Aethel's personal site — a live 3D scroll journey portfolio (three.js + skinview3d, your Minecraft skin walking through a night world), plus:
+My personal site: a 3D scroll journey built on three.js, where a Minecraft character (your actual skin, via skinview3d) walks through a night world and stops at a hologram for each project.
 
-- `/` — personal dev site with project showcase
-- `/aethel/` — the Aethel landing page
-- `/aethel/dash/` — the hosted Aethel dashboard (Flutter web)
+- `/` — the 3D journey and project showcase
+- `/aethel/` — landing page
+- `/aethel/dash/` — hosted Aethel dashboard (Flutter web)
 
-Static site, no build step. Deploys automatically to Vercel on every push.
+Plain static files, no build step. Pushes to master deploy to Vercel automatically.

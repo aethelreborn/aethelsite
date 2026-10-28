@@ -266,7 +266,7 @@ function makeHoloCanvas(proj) {
 const mono = new THREE.Group();
 const slabMat = new THREE.MeshLambertMaterial({ color: 0x171e24 });
 slabMat.transparent = true;
-slabMat.depthWrite = false; // ghost pillar must never occlude the hologram content
+slabMat.depthWrite = false; // no depth write so the panel draws over it
 const slab = new THREE.Mesh(new THREE.BoxGeometry(20, 130, 20), slabMat);
 slab.position.y = 55;
 const runeMat = new THREE.MeshBasicMaterial({ color: 0x56b896, transparent: true, opacity: 0.16, fog: false });
@@ -281,28 +281,27 @@ const emitterMat = new THREE.MeshBasicMaterial({ color: 0x9dffe0, transparent: t
 const emitter = new THREE.Mesh(new THREE.BoxGeometry(5, 5, 5), emitterMat);
 emitter.position.set(-10.2, 62, 0);
 
-// holographic content panel that replaces the solid pillar when the player idles beside it.
-// Vertical budget: camera at the stop tops out at y≈123 — panel spans y29..115 (group y72).
+// hologram panel for the featured project
 const holoGroup = new THREE.Group();
-holoGroup.position.set(-14, 72, 0); // offset toward the viewer so the slab never occludes content
+holoGroup.position.set(-14, 72, 0); // nudged toward the camera so the slab sits behind
 const holoTex = makeHoloCanvas(PROJECTS[0]);
 const holoPanelMat = new THREE.MeshBasicMaterial({ map: holoTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.FrontSide, fog: false });
 const holoPanel = new THREE.Mesh(new THREE.PlaneGeometry(120, 86), holoPanelMat);
 holoGroup.add(holoPanel);
-// wireframe border: a single flat outline (no 3-deep box → no double edges)
+// wireframe border
 const frameMat = new THREE.LineBasicMaterial({ color: 0x56b896, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
 const holoFrame = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(122, 88)), frameMat);
 holoFrame.position.z = 0.2;
 holoGroup.add(holoFrame);
-// scan bar: a thin bright band sweeping the panel instead of a solid wash sheet
+// scan bar
 const scanMat = new THREE.MeshBasicMaterial({ color: 0x9dffe0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
 const scanPlane = new THREE.Mesh(new THREE.PlaneGeometry(120, 5), scanMat);
 scanPlane.position.z = 0.4;
 holoGroup.add(scanPlane);
-// projection beam: rises from the pillar base to the panel underside
+// beam from the base up to the panel
 const beamMat = new THREE.MeshBasicMaterial({ color: 0x56b896, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
 const holoBeam = new THREE.Mesh(new THREE.CylinderGeometry(40, 6, 29, 20, 1, true), beamMat);
-holoBeam.position.set(0, -57.5, 0); // rel y −72..−29 → world 0..29 (ground → panel underside)
+holoBeam.position.set(0, -57.5, 0); // world 0..29
 holoGroup.add(holoBeam);
 mono.add(slab, rune, monoEdges, emitter, holoGroup);
 mono.position.set(42, 0, -20);
@@ -327,21 +326,18 @@ for (let i = 0; i < 7; i++) {
   lampMat.transparent = true;
   const lamp = new THREE.Mesh(new THREE.BoxGeometry(8, 8, 8), lampMat);
   lamp.position.y = 31;
-  // holographic content rig (hidden until player idles beside it).
-  // The rig is yawed 45° toward the centre path so the panel reads as a
-  // three-quarter view for the passing camera instead of edge-on.
+  // content rig
   const rig = new THREE.Group();
   const bTex = makeHoloCanvas(proj);
   const bPanelMat = new THREE.MeshBasicMaterial({ map: bTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.FrontSide, fog: false });
-  // panel sized so the near camera stop (p≈0.51) frames the whole rig
   const bPanel = new THREE.Mesh(new THREE.PlaneGeometry(64, 46), bPanelMat);
-  bPanel.position.set(0, 46, 6); // z+6 clears the 10-wide post axis (half-width 5)
+  bPanel.position.set(0, 46, 6); // z+6 keeps it off the post
   const bFrameMat = new THREE.LineBasicMaterial({ color: 0x56b896, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
   const bFrame = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(64, 46)), bFrameMat);
   bFrame.position.set(0, 46, 6.2);
   const bScanMat = new THREE.MeshBasicMaterial({ color: 0x9dffe0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
   const bScan = new THREE.Mesh(new THREE.PlaneGeometry(64, 3.5), bScanMat);
-  bScan.position.set(0, 26, 6.4); // sweeps panel height, driven per frame
+  bScan.position.set(0, 26, 6.4); // swept per frame
   // projection beam: lamp top (y≈40) → panel underside
   const bBeamMat = new THREE.MeshBasicMaterial({ color: proj.color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
   const bBeam = new THREE.Mesh(new THREE.CylinderGeometry(18, 3, 16, 16, 1, true), bBeamMat);
@@ -568,12 +564,11 @@ function frame(now) {
   holoGroup.rotation.y = Math.atan2(camera.position.x - 42, camera.position.z - (-20)) + Math.sin(now * 0.0006) * 0.06 * hb;
   holoGroup.position.y = 72 + Math.sin(now * 0.0012) * 3 * hb;
 
-  // beacon holograms: activate when player stands beside a beacon and user is not scrolling
+  // beacons: on when the player idles next to one
   for (const b of beacons) {
     const bx = b.group.position.x, bz = b.group.position.z;
     const dist = Math.hypot(cx - bx, cz - bz);
-    // player walks the centre path (x=0) and beacons sit at x=±38, so the
-    // closest possible approach is 38 — anything under 40 is "beside it"
+    // 40 covers the 38u gap from the path to the beacon
     const near = dist < 40;
     const target = (!reduceMotion && near && scrollIdle) ? 1 : 0;
     b.blend += (target - b.blend) * Math.min(1, dt * 2.6);
@@ -585,12 +580,11 @@ function frame(now) {
       b.scan.position.y = 25 + ((now * 0.03 + bx) % 42); // sweep panel height
       b.beamMat.opacity = bb * (0.1 + Math.sin(now * 0.005 + bx) * 0.035);
       b.lampMat.opacity = 1 - bb * 0.6;
-      // whole rig floats and yaws to face the viewer
       b.rig.position.y = Math.sin(now * 0.0012 + bx) * 3 * bb;
       b.rig.rotation.y = Math.atan2(camera.position.x - bx, camera.position.z - bz);
       if (b.postMat) b.postMat.opacity = 1 - bb * 0.5;
     } else {
-      // hard zero: a guarded loop must clear stale opacity, not strand it
+      // clear leftover opacity once under the guard
       b.panelMat.opacity = b.frameMat.opacity = b.scanMat.opacity = b.beamMat.opacity = 0;
       b.lampMat.opacity = 1;
       b.rig.position.y = 0;
