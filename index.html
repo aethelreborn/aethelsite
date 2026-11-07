@@ -25,6 +25,8 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preload" as="image" href="assets/og.png">
 <link rel="preconnect" href="https://github.com" crossorigin>
+<link rel="preconnect" href="https://api.emailjs.com" crossorigin>
+<script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Aethel","url":"https://aethelreborn.dpdns.org/","image":"https://aethelreborn.dpdns.org/assets/og.png","jobTitle":"Full Stack Developer","knowsAbout":["Rust","TypeScript","Java","Dart","Go","Minecraft tooling","Zero-knowledge cryptography","Self-hosted infrastructure"],"sameAs":["https://github.com/aethelreborn"],"email":"aethelreborn@proton.me"}
 </script>
@@ -222,6 +224,7 @@
   /* ---- professional additions ---- */
   .nav { transition: border-color 0.3s; border-bottom: 1px solid transparent; }
   .nav.stuck { border-bottom-color: var(--line); }
+  .nav .links a.active { color: var(--torch); }
   .nav .links a.worklink { color: var(--torch); font-weight: 600; transition: color 0.15s, opacity 0.3s; }
   .nav .links a.worklink:hover { color: #f2b866; }
   .nav .links a.worklink:active { transform: translateY(1px); }
@@ -269,6 +272,18 @@
 
   /* ---- contact + next ---- */
   .contactgrid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); gap: 36px; margin-top: 16px; }
+  .contactform { display: grid; gap: 14px; margin-top: 12px; }
+  .contactform input, .contactform textarea { width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--ink); font-family: inherit; font-size: 14px; }
+  .contactform textarea { min-height: 120px; resize: vertical; }
+  .contactform button { padding: 12px 24px; border: none; border-radius: 8px; background: var(--torch); color: var(--ground); font-weight: 700; cursor: pointer; font-family: inherit; font-size: 14px; }
+  .contactform button:hover { background: #f2b866; }
+  .contactform .ok { color: var(--moss); font-size: 13px; font-family: "JetBrains Mono", monospace; margin-top: 6px; }
+  .contactform .err { color: #c94f4f; font-size: 13px; font-family: "JetBrains Mono", monospace; margin-top: 6px; }
+
+  /* ---- scroll progress ---- */
+  #progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--torch); width: 0%; z-index: 60; transform-origin: 0% 50%; }
+
+  /* ---- contact + next ---- */
   .contactgrid .lede { margin-top: 8px; }
   .mail { display: inline-flex; margin-top: 20px; align-items: center; min-height: 44px; font-family: "JetBrains Mono", monospace; font-size: 15px; color: var(--torch); text-decoration: none; border-bottom: 2px solid var(--torch); padding-bottom: 3px; }
   .mail:hover { color: #f2b866; border-color: #f2b866; }
@@ -297,6 +312,7 @@
 </head>
 <body>
   <a class="skip-link" href="#hero">Skip to content</a>
+  <div id="progress"></div>
 
 <canvas id="world" aria-hidden="true"></canvas>
 
@@ -396,7 +412,7 @@
         <li class="workrow"><div class="row">
           <span class="num">07</span>
           <h3><a href="https://github.com/aethelreborn/AethelPanel" target="_blank" rel="noopener">AethelPanel</a></h3>
-          <span class="stack">TypeScript</span>
+          <span class="stack">TypeScript<a class="ext" href="https://panel.aethelreborn.dpdns.org" target="_blank" rel="noopener">Live ↗</a></span>
           <p class="blurb">Self-hosted game-server panel with a daemon per machine and HMAC auth.</p>
         </div></li>
       </ol>
@@ -504,6 +520,17 @@
             <span class="chip">Flutter apps</span>
           </div>
         </div>
+        <div>
+          <p class="chiplabel">Say something</p>
+          <form class="contactform" id="contactForm" novalidate>
+            <input type="text" name="from_name" placeholder="Your name" required>
+            <input type="email" name="from_email" placeholder="you@example.com" required>
+            <textarea name="message" placeholder="What are we building?" required></textarea>
+            <button type="submit">Send message ↗</button>
+            <p class="ok" id="formOk" style="display:none">Sent — thanks.</p>
+            <p class="err" id="formErr" style="display:none">Failed — mail me directly instead.</p>
+          </form>
+        </div>
       </div>
     </div>
   </section>
@@ -589,6 +616,44 @@
     }), { threshold: 0.4 });
     io2.observe(document.getElementById("hero"));
   }
+
+  // scroll progress bar
+  const progress = document.getElementById("progress");
+  addEventListener("scroll", () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const p = max > 0 ? (scrollY / max) * 100 : 0;
+    if (progress) progress.style.width = p + "%";
+  }, { passive: true });
+
+  // active nav link highlighting by section
+  const sections = ["#featured", "#work", "#now", "#about", "#contact"];
+  const navLinks = Array.from(document.querySelectorAll(".nav .links a[href^=\"#\"]"));
+  const io3 = new IntersectionObserver(es => es.forEach(e => {
+    const id = e.target.getAttribute("id");
+    const active = sections.includes("#" + id) && e.isIntersecting;
+    navLinks.forEach(a => {
+      if (a.getAttribute("href") === "#" + id) a.classList.toggle("active", active);
+    });
+  }), { threshold: 0.35 });
+  document.querySelectorAll("section[id]").forEach(el => io3.observe(el));
+
+  // EmailJS contact form
+  (function() {
+    const form = document.getElementById("contactForm");
+    const ok = document.getElementById("formOk");
+    const err = document.getElementById("formErr");
+    if (!form) return;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!window.emailjs) { show(err); return; }
+      try {
+        await emailjs.sendForm("service_your_service", "template_your_template", form, "YOUR_USER_ID");
+        show(ok);
+        form.reset();
+      } catch (err_) { show(err); }
+    });
+    function show(el) { ok.style.display = "none"; err.style.display = "none"; if (el) el.style.display = "block"; }
+  })();
 </script>
 </body>
 </html>
