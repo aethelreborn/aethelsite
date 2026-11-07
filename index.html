@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aethel — building ideas into experiences</title>
 <meta name="description" content="Aethel — indie developer. Rust, Java, TypeScript, Dart. Minecraft launchers, anticheats, zero-knowledge tools, self-hosted everything.">
+<meta name="theme-color" content="#0b1013">
+<link rel="canonical" href="https://aethelreborn.dpdns.org/">
+<meta property="og:title" content="Aethel — building ideas into experiences">
+<meta property="og:description" content="Indie developer: Minecraft clients and anticheats, zero-knowledge tools, self-hosted everything. Rust, Java, TypeScript, Dart, Go.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethelreborn.dpdns.org/">
+<meta property="og:image" content="https://aethelreborn.dpdns.org/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aethel — building ideas into experiences">
+<meta name="twitter:description" content="Indie developer: Minecraft clients and anticheats, zero-knowledge tools, self-hosted everything.">
+<meta name="twitter:image" content="https://aethelreborn.dpdns.org/assets/og.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
   @font-face { font-family: "Space Grotesk"; src: url("fonts/SpaceGrotesk-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
@@ -22,6 +35,15 @@
     --moss: #56b896;
     --line: rgba(238, 243, 240, 0.14);
     --scrim: rgba(11, 16, 19, 0.78);
+  }
+  html.theme-light {
+    --ground: #f4f1ea;
+    --ink: #1a1a18;
+    --muted: #6e7a75;
+    --torch: #b07a2e;
+    --moss: #3a7a58;
+    --line: rgba(26, 26, 24, 0.08);
+    --scrim: rgba(244, 241, 234, 0.88);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -68,6 +90,19 @@
   .nav .brand { font-weight: 700; font-size: 19px; letter-spacing: -0.02em; color: var(--ink); text-decoration: none; }
   .nav .brand em { color: var(--torch); font-style: normal; }
   .nav .links { display: flex; gap: 26px; align-items: center; font-family: "JetBrains Mono", monospace; font-size: 13px; }
+  .theme-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; min-width: 40px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.06);
+    color: var(--ink);
+    cursor: pointer; border-radius: 10px; font-size: 13px; font-family: "JetBrains Mono", monospace;
+  }
+  .theme-toggle:hover { border-color: var(--torch); }
+  .theme-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .theme-toggle .sun { display: none; }
+  html.theme-light .theme-toggle .sun { display: block; }
+  html.theme-light .theme-toggle .moon { display: none; }
   .nav .links a { color: var(--muted); text-decoration: none; transition: color 0.15s; padding: 8px 4px; }
   .nav .links a:hover { color: var(--ink); }
   .nav .links a.enter { color: var(--ground); background: var(--torch); padding: 8px 14px; font-weight: 600; }
@@ -175,9 +210,48 @@
     .nav .links a:not(.enter) { display: none; }
     h1 { font-size: clamp(48px, 15vw, 72px); }
   }
+  /* ---- professional additions ---- */
+  .nav { transition: border-color 0.3s; border-bottom: 1px solid transparent; }
+  .nav.stuck { border-bottom-color: var(--line); }
+  .nav .links a.worklink { color: var(--torch); font-weight: 600; transition: color 0.15s, opacity 0.3s; }
+  .nav .links a.worklink:hover { color: #f2b866; }
+  .nav .links a.worklink:active { transform: translateY(1px); }
+  .nav .links a.worklink.open { opacity: 0; width: 0; padding: 0; pointer-events: none; overflow: hidden; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s ease, transform 0.55s ease; transition-delay: var(--d, 0s); }
+  html.theme-light .panel::before { background: linear-gradient(100deg, rgba(244,241,234,0.92), rgba(244,241,234,0.7) 68%, transparent); }
+  html.theme-light .panel.right::before { background: linear-gradient(260deg, rgba(244,241,234,0.92), rgba(244,241,234,0.7) 68%, transparent); }
+  .nowlist { list-style: none; margin-top: 22px; font-family: "JetBrains Mono", monospace; font-size: 15px; color: var(--muted); line-height: 1.9; }
+  .nowlist li { padding: 6px 0; position: relative; padding-left: 16px; }
+  .nowlist li::before { content: "▸"; position: absolute; left: 0; color: var(--torch); font-size: 11px; }
+  html.theme-light .nowlist li::before { color: var(--moss); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---- contact + next ---- */
+  .contactgrid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); gap: 36px; margin-top: 16px; }
+  .contactgrid .lede { margin-top: 8px; }
+  .mail { display: inline-flex; margin-top: 20px; align-items: center; min-height: 44px; font-family: "JetBrains Mono", monospace; font-size: 15px; color: var(--torch); text-decoration: none; border-bottom: 2px solid var(--torch); padding-bottom: 3px; }
+  .mail:hover { color: #f2b866; border-color: #f2b866; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .chip { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-family: "JetBrains Mono", monospace; font-size: 13px; transition: border-color 0.15s, color 0.15s, transform 0.12s; }
+  a.chip:hover { border-color: var(--torch); color: var(--torch); }
+  a.chip:active { transform: translateY(1px); }
+  .chip.ghostchip { color: var(--muted); }
+  .chiplabel { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-top: 24px; }
+  .next { padding-bottom: 30px; }
+  .next .panel { text-align: center; margin: 0 auto; }
+  .next .panel::before { display: none; }
+  .next .eyebrow, .next h2 { text-align: center; }
+  .next .actions { justify-content: center; }
+
+  @media (max-width: 720px) {
+    .contactgrid { grid-template-columns: 1fr; gap: 24px; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .scrollhint { display: none; }
     #loader .bar i { animation: none; width: 100%; }
+    .reveal { opacity: 1 !important; transform: none !important; }
   }
 </style>
 </head>
@@ -198,7 +272,13 @@
     <a href="#featured">Featured</a>
     <a href="#work">Work</a>
     <a href="#about">About</a>
+    <a href="#contact">Contact</a>
     <a class="enter" href="aethel/">Enter&nbsp;Aethel&nbsp;↗</a>
+    <a class="worklink open" href="https://github.com/aethelreborn" target="_blank" rel="noopener">Work&nbsp;↗</a>
+    <button class="theme-toggle" aria-label="Toggle theme" id="themeToggle">
+      <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
   </nav>
 </header>
 
@@ -206,23 +286,23 @@
 
   <section id="hero" aria-label="Introduction">
     <div class="panel">
-      <p class="eyebrow">Indie developer &amp; builder</p>
-      <h1>Aethel<em>.</em></h1>
-      <p class="lede">Building ideas into experiences, one project at a time — Minecraft clients and anticheats, zero-knowledge tools, self-hosted everything.</p>
-      <div class="actions">
+      <p class="eyebrow reveal">Indie developer &amp; builder</p>
+      <h1 class="reveal" style="--d:.08s">Aethel<em>.</em></h1>
+      <p class="lede reveal" style="--d:.16s">Building ideas into experiences, one project at a time — Minecraft clients and anticheats, zero-knowledge tools, self-hosted everything.</p>
+      <div class="actions reveal" style="--d:.24s">
         <a class="btn primary" href="aethel/">Open Aethel</a>
         <a class="btn ghost" href="#work">See the work</a>
       </div>
-      <p class="meta">Rust · Java · TypeScript · Dart · Go&nbsp;&nbsp;<span class="mc">player: darki_krish</span></p>
+      <p class="meta reveal" style="--d:.32s">Rust · Java · TypeScript · Dart · Go&nbsp;&nbsp;<span class="mc">player: darki_krish</span></p>
     </div>
   </section>
 
   <section id="featured" aria-label="Featured project">
     <div class="panel right">
-      <p class="eyebrow">Featured — the monolith</p>
-      <h2>Aethel</h2>
-      <p class="lede">A zero-knowledge vault for passwords, bills, and focus. The master password never leaves your device — the server only ever sees ciphertext, and rejects anything else.</p>
-      <dl class="facts">
+      <p class="eyebrow reveal">Featured — the monolith</p>
+      <h2 class="reveal" style="--d:.08s">Aethel</h2>
+      <p class="lede reveal" style="--d:.16s">A zero-knowledge vault for passwords, bills, and focus. The master password never leaves your device — the server only ever sees ciphertext, and rejects anything else.</p>
+      <dl class="facts reveal" style="--d:.24s">
         <dt>App</dt><dd>Flutter · Riverpod · SQLCipher</dd>
         <dt>Crypto</dt><dd>HKDF-SHA256 + AES-256-GCM</dd>
         <dt>Server</dt><dd>Node · TypeScript · Postgres</dd>
@@ -233,9 +313,9 @@
 
   <section id="work" aria-label="Selected work">
     <div class="panel">
-      <p class="eyebrow">The ridge — selected work</p>
-      <h2>Seven builds, one path</h2>
-      <ol class="worklist">
+      <p class="eyebrow reveal">The ridge — selected work</p>
+      <h2 class="reveal" style="--d:.08s">Seven builds, one path</h2>
+      <ol class="worklist reveal" style="--d:.16s">
         <li class="workrow"><div class="row">
           <span class="num">01</span>
           <h3><a href="https://github.com/aethelreborn/AethelONE" target="_blank" rel="noopener">AethelONE</a></h3>
@@ -282,17 +362,68 @@
     </div>
   </section>
 
+  <section id="now" aria-label="Now">
+    <div class="panel right">
+      <p class="eyebrow reveal">Now</p>
+      <h2 class="reveal" style="--d:.08s">Currently building</h2>
+      <ul class="nowlist reveal" style="--d:.16s">
+        <li>Aethel — private ledger, ZK auth, Flutter + Rust</li>
+        <li>firstboot — Go TUI for fresh-OS setup</li>
+        <li>Learning: zero-knowledge proofs, self-hosted infra</li>
+      </ul>
+    </div>
+  </section>
+
   <section id="about" aria-label="About">
     <div class="panel right">
-      <p class="eyebrow">The campfire</p>
-      <h2>Hey — I'm Aethel.</h2>
-      <p class="lede">I build complete products end to end: crypto layer, GUI, and the pipeline that ships them. Privacy and self-hosting run through everything — my own update channels, my own panels, my own storage.</p>
-      <table class="stacktable">
+      <p class="eyebrow reveal">The campfire</p>
+      <h2 class="reveal" style="--d:.08s">Hey — I'm Aethel.</h2>
+      <p class="lede reveal" style="--d:.16s">I build complete products end to end: crypto layer, GUI, and the pipeline that ships them. Privacy and self-hosting run through everything — my own update channels, my own panels, my own storage.</p>
+      <table class="stacktable reveal" style="--d:.24s">
         <tr><td>Systems &amp; infra</td><td>Rust — egui, Axum, native Minecraft servers</td></tr>
         <tr><td>Minecraft craft</td><td>Java &amp; Kotlin — plugins, mods, anticheats</td></tr>
         <tr><td>Web &amp; backend</td><td>TypeScript, Node, Go</td></tr>
         <tr><td>Apps</td><td>Dart — Flutter, Riverpod</td></tr>
       </table>
+    </div>
+  </section>
+
+  <section id="contact" aria-label="Contact">
+    <div class="panel">
+      <p class="eyebrow reveal">Send a raven</p>
+      <h2 class="reveal" style="--d:.08s">Have something to build?</h2>
+      <p class="lede reveal" style="--d:.16s">Freelance builds, collaboration, or just a good talk about Rust, crypto, or Minecraft internals — the inbox is open.</p>
+      <div class="contactgrid reveal" style="--d:.24s">
+        <div>
+          <a class="mail" href="mailto:aethelreborn@proton.me">aethelreborn@proton.me</a>
+          <div class="chips">
+            <a class="chip" href="https://github.com/aethelreborn" target="_blank" rel="noopener">GitHub ↗</a>
+            <a class="chip" href="https://github.com/aethelreborn?tab=repositories" target="_blank" rel="noopener">Repositories ↗</a>
+            <a class="chip" href="https://aethelreborn.dpdns.org" target="_blank" rel="noopener">Live site ↗</a>
+            <a class="chip ghostchip" href="aethel/">Aethel app ↗</a>
+          </div>
+        </div>
+        <div>
+          <p class="chiplabel">Open for</p>
+          <div class="chips">
+            <span class="chip">Rust systems</span>
+            <span class="chip">Backends &amp; APIs</span>
+            <span class="chip">Minecraft tooling</span>
+            <span class="chip">Flutter apps</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="next" class="next" aria-label="Footer action">
+    <div class="panel">
+      <p class="eyebrow reveal">Keep walking</p>
+      <h2 class="reveal" style="--d:.08s">Back to camp</h2>
+      <div class="actions reveal" style="--d:.16s">
+        <a class="btn primary" href="#hero">Back to top ↑</a>
+        <a class="btn ghost" href="aethel/">Open Aethel ↗</a>
+      </div>
     </div>
   </section>
 
@@ -329,6 +460,37 @@
       document.getElementById("loader")?.remove();
     }
   }, 8000);
+
+  // sticky nav state
+  const nav = document.querySelector(".nav");
+  const onNav = () => nav.classList.toggle("stuck", scrollY > 10);
+  addEventListener("scroll", onNav, { passive: true });
+  onNav();
+
+  // scroll reveals
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+  }), { threshold: 0.18 });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+  // theme toggle — persists in localStorage
+  const toggle = document.getElementById("themeToggle");
+  const root = document.documentElement;
+  const saved = localStorage.getItem("aethel-theme");
+  if (saved === "light") root.classList.add("theme-light");
+  if (toggle) toggle.addEventListener("click", () => {
+    const light = root.classList.toggle("theme-light");
+    localStorage.setItem("aethel-theme", light ? "light" : "dark");
+  });
+
+  // Work↗ appears in the nav once the hero scrolls away
+  const workLink = document.querySelector(".worklink");
+  if (workLink) {
+    const io2 = new IntersectionObserver(es => es.forEach(e => {
+      workLink.classList.toggle("open", !e.isIntersecting);
+    }), { threshold: 0.4 });
+    io2.observe(document.getElementById("hero"));
+  }
 </script>
 </body>
 </html>
