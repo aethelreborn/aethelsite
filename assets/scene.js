@@ -21,7 +21,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPrefere
 renderer.setClearColor(0x0b1013, 1);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
-const DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+const DPR = Math.min(window.devicePixelRatio || 1, 1);
 renderer.setPixelRatio(DPR);
 
 const scene = new THREE.Scene();
@@ -174,19 +174,11 @@ torch(50, -450);
 torch(-45, -600);
 torch(40, -750);
 
-// ---------- nebula sky ----------  
-const nebulaGeo = new THREE.PlaneGeometry(900, 600);
-const nebulaMat = new THREE.MeshBasicMaterial({ color: 0x2a1a3e, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide });
-const nebula = new THREE.Mesh(nebulaGeo, nebulaMat);
-nebula.position.set(0, 200, -500);
-nebula.rotation.x = -0.4;
-scene.add(nebula);
-
 // ---------- floating particles (fireflies) ----------  
-const particleGeo = new THREE.SphereGeometry(0.7, 6, 6);
+const particleGeo = new THREE.SphereGeometry(0.5, 4, 4);
 const particleMat = new THREE.MeshBasicMaterial({ color: 0x9dffe0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
 const particles = [];
-for (let i = 0; i < 40; i++) {
+for (let i = 0; i < 16; i++) {
   const p = new THREE.Mesh(particleGeo, particleMat.clone());
   p.userData = {
     seed: i * 0.73,
@@ -554,7 +546,7 @@ function frame(now) {
   // character
   const cs = sampleKeys(charKeys, curP);
   const cx = lerp(cs.a.x, cs.b.x, cs.t), cz = lerp(cs.a.z, cs.b.z, cs.t);
-  player.position.set(cx, 0, cz);
+  player.position.set(cx, player.position.y || 0, cz);
   shadow.position.set(cx, 0.3, cz);
   const dx = cx - prevPos.x, dz = cz - prevPos.z;
   const speed = Math.hypot(dx, dz) / Math.max(dt, 1e-4);
@@ -578,7 +570,9 @@ function frame(now) {
     yaw += wrapAngle(stopKey.face - yaw) * Math.min(1, dt * 4);
   } else {
     setAnim("idle");
-    yaw += wrapAngle((stopKey.face ?? 0.4) - yaw) * Math.min(1, dt * 4);
+    const idleSway = Math.sin(now * 0.002) * 0.06;
+    yaw += wrapAngle((stopKey.face ?? 0.4) + idleSway - yaw) * Math.min(1, dt * 4);
+    player.position.y = Math.sin(now * 0.003) * 0.4;
   }
   player.rotation.y = yaw;
   anims.walk.speed = Math.min(3, 0.6 + speed / 26);
@@ -656,9 +650,6 @@ function frame(now) {
     e.scale.setScalar(1 - t * 0.6);
     e.material.opacity = (1 - t) * 0.9;
   });
-
-  // nebula slow pulse
-  nebulaMat.opacity = 0.14 + Math.sin(now * 0.0012) * 0.06;
 
   // second campfire flicker
   const f2flick = 1 + Math.sin(now * 0.02) * 0.16;
