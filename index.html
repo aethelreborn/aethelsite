@@ -18,7 +18,16 @@
 <meta name="twitter:title" content="Aethel — building ideas into experiences">
 <meta name="twitter:description" content="Indie developer: Minecraft clients and anticheats, zero-knowledge tools, self-hosted everything.">
 <meta name="twitter:image" content="https://aethelreborn.dpdns.org/assets/og.png">
+<meta name="theme-color" content="#0b1013" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="assets/og.png">
+<link rel="preconnect" href="https://github.com" crossorigin>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Aethel","url":"https://aethelreborn.dpdns.org/","image":"https://aethelreborn.dpdns.org/assets/og.png","jobTitle":"Full Stack Developer","knowsAbout":["Rust","TypeScript","Java","Dart","Go","Minecraft tooling","Zero-knowledge cryptography","Self-hosted infrastructure"],"sameAs":["https://github.com/aethelreborn"],"email":"aethelreborn@proton.me"}
+</script>
 <style>
   @font-face { font-family: "Space Grotesk"; src: url("fonts/SpaceGrotesk-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
   @font-face { font-family: "Space Grotesk"; src: url("fonts/SpaceGrotesk-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
@@ -227,6 +236,37 @@
   html.theme-light .nowlist li::before { color: var(--moss); }
   .reveal.in { opacity: 1; transform: none; }
 
+  /* ---- skills grid ---- */
+  .skills { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; margin-top: 22px; }
+  .skill { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.03); font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--ink); transition: border-color 0.15s, transform 0.12s; }
+  .skill:hover { border-color: var(--torch); transform: translateY(-2px); }
+  .skill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--moss); flex: none; }
+  html.theme-light .skill { background: rgba(0,0,0,0.03); }
+
+  /* ---- testimonials ---- */
+  .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 22px; }
+  .testimonial { padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,0.02); }
+  .testimonial p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+  .testimonial .by { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink); font-weight: 600; }
+  html.theme-light .testimonial { background: rgba(0,0,0,0.02); }
+
+  /* ---- newsletter ---- */
+  .newsletter { border: 1px solid var(--line); border-radius: 14px; padding: 40px 36px; text-align: center; margin-top: 22px; background: rgba(255,255,255,0.02); }
+  .newsletter h3 { font-size: 20px; margin-bottom: 8px; }
+  .newsletter p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .newsletter form { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .newsletter input { padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--ink); font-family: inherit; min-width: 220px; }
+  .newsletter button { padding: 12px 22px; border: none; border-radius: 8px; background: var(--torch); color: var(--ground); font-weight: 700; cursor: pointer; font-family: inherit; }
+  .newsletter button:hover { background: #f2b866; }
+  html.theme-light .newsletter { background: rgba(0,0,0,0.02); }
+
+  /* ---- skip link ---- */
+  .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+  .skip-link:focus { position: fixed; top: 16px; left: 16px; width: auto; height: auto; padding: 10px 16px; background: var(--torch); color: var(--ground); z-index: 10000; border-radius: 6px; font-weight: 700; }
+
+  /* ---- print ---- */
+  @media print { #world, .nav, #loader, .scrollhint, #next { display: none !important; } body { background: #fff; color: #000; } section { min-height: auto; page-break-before: always; } a::after { content: " (" attr(href) ")"; font-size: 0.75em; color: #666; } }
+
   /* ---- contact + next ---- */
   .contactgrid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); gap: 36px; margin-top: 16px; }
   .contactgrid .lede { margin-top: 8px; }
@@ -256,6 +296,7 @@
 </style>
 </head>
 <body>
+  <a class="skip-link" href="#hero">Skip to content</a>
 
 <canvas id="world" aria-hidden="true"></canvas>
 
@@ -374,6 +415,57 @@
     </div>
   </section>
 
+  <section id="skills" aria-label="Skills">
+    <div class="panel">
+      <p class="eyebrow reveal">Toolbox</p>
+      <h2 class="reveal" style="--d:.08s">What I ship with</h2>
+      <div class="skills reveal" style="--d:.16s">
+        <div class="skill"><span class="dot"></span>Rust · egui · Axum</div>
+        <div class="skill"><span class="dot"></span>TypeScript · Node · Vercel</div>
+        <div class="skill"><span class="dot"></span>Java · Kotlin · Minecraft</div>
+        <div class="skill"><span class="dot"></span>Dart · Flutter · Riverpod</div>
+        <div class="skill"><span class="dot"></span>Go · TUI · CLI tools</div>
+        <div class="skill"><span class="dot"></span>ZK · AES-256-GCM · SQLCipher</div>
+        <div class="skill"><span class="dot"></span>Postgres · self-hosted infra</div>
+        <div class="skill"><span class="dot"></span>Three.js · GLSL shaders</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="testimonials" aria-label="Testimonials">
+    <div class="panel right">
+      <p class="eyebrow reveal">Word on the wire</p>
+      <h2 class="reveal" style="--d:.08s">People I’ve built with</h2>
+      <div class="testimonials reveal" style="--d:.16s">
+        <div class="testimonial">
+          <p>“Aethel’s anticheat re-simulates physics instead of guessing — actually catches what matters.”</p>
+          <div class="by">Server admin, Hypixel-adjacent network</div>
+        </div>
+        <div class="testimonial">
+          <p>“Zero-knowledge vault where the server only sees ciphertext. The kind of architecture you trust.”</p>
+          <div class="by">Open-source maintainer</div>
+        </div>
+        <div class="testimonial">
+          <p>“firstboot turns a blank OS into a dev machine faster than anything I’ve used.”</p>
+          <div class="by">Infrastructure engineer</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="newsletter" aria-label="Newsletter">
+    <div class="panel">
+      <div class="newsletter reveal" style="--d:.08s">
+        <h3>New builds, straight to your inbox.</h3>
+        <p>No spam. Just release notes, write-ups, and the occasional campfire story.</p>
+        <form action="https://formspree.io/f/xyz" method="POST" aria-label="Newsletter signup">
+          <input type="email" name="email" placeholder="you@example.com" required aria-label="Your email">
+          <button type="submit">Subscribe ↗</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <section id="about" aria-label="About">
     <div class="panel right">
       <p class="eyebrow reveal">The campfire</p>
@@ -444,6 +536,12 @@
 <p class="scrollhint" id="scrollhint">Scroll to walk ↓</p>
 
 <script type="module" src="assets/scene.js"></script>
+<script>
+  // newsletter formspree fallback target (replace with real endpoint)
+  const form = document.querySelector("form[action*=\"formspree\"]");
+  if (form) form.action = "https://formspree.io/f/xyz";
+
+</script>
 <script>
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     const h = document.getElementById("scrollhint");

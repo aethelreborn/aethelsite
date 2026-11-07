@@ -150,6 +150,56 @@ fire.add(fireLight);
 fire.position.set(0, 0, -244);
 scene.add(fire);
 
+// ---------- second campfire ----------  
+const fire2 = new THREE.Group();
+const fire2Log = new THREE.Mesh(logGeo, woodMat);
+fire2Log.rotation.z = Math.PI / 2;
+fire2Log.position.y = -1;
+fire2.add(fire2Log);
+const fire2Flame = new THREE.Mesh(new THREE.ConeGeometry(5, 18, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0xffb35c, transparent: true, opacity: 0.88, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+fire2Flame.position.y = 8;
+fire2.add(fire2Flame);
+const fire2Core = new THREE.Mesh(new THREE.ConeGeometry(2, 12, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0xfff1c2, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+fire2Core.position.y = 5;
+fire2.add(fire2Core);
+const fire2Light = new THREE.PointLight(0xe8a44c, 400, 200, 2);
+fire2Light.position.y = 10;
+fire2.add(fire2Light);
+fire2.position.set(-60, 0, -600);
+scene.add(fire2);
+
+// ---------- extra torches ----------  
+torch(-50, -300);
+torch(50, -450);
+torch(-45, -600);
+torch(40, -750);
+
+// ---------- nebula sky ----------  
+const nebulaGeo = new THREE.PlaneGeometry(900, 600);
+const nebulaMat = new THREE.MeshBasicMaterial({ color: 0x2a1a3e, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide });
+const nebula = new THREE.Mesh(nebulaGeo, nebulaMat);
+nebula.position.set(0, 200, -500);
+nebula.rotation.x = -0.4;
+scene.add(nebula);
+
+// ---------- floating particles (fireflies) ----------  
+const particleGeo = new THREE.SphereGeometry(0.7, 6, 6);
+const particleMat = new THREE.MeshBasicMaterial({ color: 0x9dffe0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+const particles = [];
+for (let i = 0; i < 40; i++) {
+  const p = new THREE.Mesh(particleGeo, particleMat.clone());
+  p.userData = {
+    seed: i * 0.73,
+    x: (Math.random() - 0.5) * 800,
+    y: 100 + Math.random() * 200,
+    z: -100 - Math.random() * 900,
+    speed: 0.5 + Math.random() * 1.5
+  };
+  p.position.set(p.userData.x, p.userData.y, p.userData.z);
+  scene.add(p);
+  particles.push(p);
+}
+
 // ---------- project data (7 ridge beacons + featured monolith) ----------
 const PROJECTS = [
   { name: "Aethel", stack: "Rust · Java · TS · Dart", blurb: "Building ideas into experiences — Minecraft clients, anticheats, zero-knowledge tools, self-hosted everything.", color: 0x56b896, url: "aethel/", logo: "assets/logos/aethel.png" },
@@ -605,6 +655,24 @@ function frame(now) {
     e.position.set(Math.sin(s*3.1 + t*2) * (4 + t*3), t * 26 + 2, Math.cos(s*2.7 + t*2) * (4 + t*3));
     e.scale.setScalar(1 - t * 0.6);
     e.material.opacity = (1 - t) * 0.9;
+  });
+
+  // nebula slow pulse
+  nebulaMat.opacity = 0.14 + Math.sin(now * 0.0012) * 0.06;
+
+  // second campfire flicker
+  const f2flick = 1 + Math.sin(now * 0.02) * 0.16;
+  fire2Flame.scale.set(1 + Math.sin(now*0.025)*0.1, f2flick, 1 + Math.sin(now*0.025)*0.1);
+  fire2Core.scale.setScalar(1 + Math.sin(now*0.03)*0.15);
+  fire2Light.intensity = 400 + Math.sin(now * 0.019) * 90;
+
+  // fireflies float
+  particles.forEach((p, i) => {
+    const s = p.userData.seed;
+    const t = now * 0.001 * p.userData.speed + s;
+    p.position.y = p.userData.y + Math.sin(t) * 6 + Math.cos(t * 1.3) * 4;
+    p.position.x = p.userData.x + Math.cos(t * 0.7) * 5;
+    p.material.opacity = 0.5 + Math.sin(t * 2) * 0.5;
   });
 
   renderer.render(scene, camera);
